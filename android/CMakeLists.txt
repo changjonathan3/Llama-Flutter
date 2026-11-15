@@ -2,6 +2,19 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project(llama_jni)
 
+# Android cross-compile fix (fork patch): the NDK toolchain restricts
+# CMake package searches to the sysroot
+# (CMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY), which hides host-side
+# packages ggml-vulkan needs at configure time (SPIRV-Headers from
+# the Vulkan SDK) even though ggml-vulkan appends $VULKAN_SDK to
+# CMAKE_PREFIX_PATH. Allow host prefixes and pin the config dir.
+if (DEFINED ENV{VULKAN_SDK})
+    set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)
+    list(APPEND CMAKE_PREFIX_PATH "$ENV{VULKAN_SDK}")
+    set(SPIRV-Headers_DIR "$ENV{VULKAN_SDK}/share/cmake/SPIRV-Headers"
+        CACHE PATH "SPIRV-Headers config dir" FORCE)
+endif()
+
 # Set C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
