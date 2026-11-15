@@ -13,6 +13,11 @@ if (DEFINED ENV{VULKAN_SDK})
     list(APPEND CMAKE_PREFIX_PATH "$ENV{VULKAN_SDK}")
     set(SPIRV-Headers_DIR "$ENV{VULKAN_SDK}/share/cmake/SPIRV-Headers"
         CACHE PATH "SPIRV-Headers config dir" FORCE)
+    # The NDK sysroot ships the Vulkan C headers but not vulkan.hpp,
+    # which ggml-vulkan.cpp includes. Compile against the SDK's
+    # headers; the link still uses the NDK's libvulkan stub.
+    set(Vulkan_INCLUDE_DIR "$ENV{VULKAN_SDK}/include"
+        CACHE PATH "Vulkan headers (SDK; NDK sysroot lacks vulkan.hpp)" FORCE)
 endif()
 
 # Set C++17
