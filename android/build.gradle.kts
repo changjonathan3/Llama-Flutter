@@ -53,7 +53,7 @@ android {
     }
 
     defaultConfig {
-        minSdk = 26  // Android 8.0 (for SharedMemory support)
+        minSdk = 28  // Android 9.0 — fork patch: ggml-vulkan links Vulkan 1.1 symbols (vkGetPhysicalDeviceFeatures2) absent from the android-26 stub
         
         ndk {
             abiFilters.addAll(listOf("arm64-v8a"))  // Only ARM64
