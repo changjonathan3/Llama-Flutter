@@ -30,13 +30,22 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size
 
 # ARM64 optimizations
 if(ANDROID_ABI STREQUAL "arm64-v8a")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -march=armv8-a+crc")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=armv8-a+crc")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -march=armv8.2-a+dotprod+i8mm+fp16")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=armv8.2-a+dotprod+i8mm+fp16")
 endif()
 
 # llama.cpp options
 set(GGML_CPU_AARCH64 ON CACHE BOOL "Enable ARM64 support")
 set(GGML_DOTPROD ON CACHE BOOL "Enable ARM NEON dot product")
+# CPU kernel fix (2026-11-15): without GGML_CPU_ARM_ARCH, ggml-cpu's
+# feature checks run against the baseline armv8-a target and the
+# SDOT / I8MM / KleidiAI kernels never compile — prefill ran on the
+# generic NEON fallback at ~5-10 tok/s on a Snapdragon 8 Gen 3.
+# GGML_NATIVE must stay OFF: in a cross-compile it probes the x86
+# build host, not the phone. armv8.2-a+dotprod+i8mm+fp16 is within
+# every SD 8 Gen 2/3 core's capabilities (ARMv9 is backward compatible).
+set(GGML_NATIVE OFF CACHE BOOL "Cross-compile: never probe the build host" FORCE)
+set(GGML_CPU_ARM_ARCH "armv8.2-a+dotprod+i8mm+fp16" CACHE STRING "ARM arch for ggml kernels" FORCE)
 set(GGML_VULKAN ON CACHE BOOL "Enable Vulkan GPU backend")
 set(GGML_STATIC OFF CACHE BOOL "Build as shared library")
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries")
