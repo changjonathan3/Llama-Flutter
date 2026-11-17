@@ -46,6 +46,11 @@ set(GGML_DOTPROD ON CACHE BOOL "Enable ARM NEON dot product")
 # every SD 8 Gen 2/3 core's capabilities (ARMv9 is backward compatible).
 set(GGML_NATIVE OFF CACHE BOOL "Cross-compile: never probe the build host" FORCE)
 set(GGML_CPU_ARM_ARCH "armv8.2-a+dotprod+i8mm+fp16" CACHE STRING "ARM arch for ggml kernels" FORCE)
+# KleidiAI (2026-11-16): ggml defaults GGML_CPU_KLEIDIAI to OFF, so
+# the fast i8mm GEMM kernels were never built — phone prefill
+# measured ~10-20 tok/s for the 3B (PERF lines) vs the 100+ tok/s
+# the hardware does with KleidiAI. Enable it.
+set(GGML_CPU_KLEIDIAI ON CACHE BOOL "ggml: use KleidiAI optimized kernels" FORCE)
 set(GGML_VULKAN ON CACHE BOOL "Enable Vulkan GPU backend")
 set(GGML_STATIC OFF CACHE BOOL "Build as shared library")
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries")
