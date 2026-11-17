@@ -51,7 +51,13 @@ set(GGML_CPU_ARM_ARCH "armv8.2-a+dotprod+i8mm+fp16" CACHE STRING "ARM arch for g
 # measured ~10-20 tok/s for the 3B (PERF lines) vs the 100+ tok/s
 # the hardware does with KleidiAI. Enable it.
 set(GGML_CPU_KLEIDIAI ON CACHE BOOL "ggml: use KleidiAI optimized kernels" FORCE)
-set(GGML_VULKAN ON CACHE BOOL "Enable Vulkan GPU backend")
+# Vulkan OFF (2026-11-16, patch 8): with the Vulkan backend merely
+# PRESENT, ggml's scheduler splits the CPU graph around it and the
+# 257-token prefill never finished in 25s on the phone (PERF
+# measured), while 23-token prefills completed. GPU layers also
+# crashed at any count on the Adreno 750. CPU-only build: prefill
+# is the product path (KleidiAI on, patch 7).
+set(GGML_VULKAN OFF CACHE BOOL "Enable Vulkan GPU backend")
 set(GGML_STATIC OFF CACHE BOOL "Build as shared library")
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries")
 
