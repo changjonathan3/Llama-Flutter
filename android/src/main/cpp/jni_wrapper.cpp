@@ -3,6 +3,7 @@
 #include <vector>
 #include <atomic>
 #include <ctime>
+#include <chrono>
 #include <cstring>
 #include <android/log.h>
 #include "llama.cpp/include/llama.h"
@@ -365,6 +366,7 @@ Java_com_write4me_llama_1flutter_1android_LlamaFlutterAndroidPlugin_nativeGenera
     const char* sanitized_cstr = sanitized_prompt.c_str();
     const int sanitized_len = sanitized_prompt.length();
     
+    const auto perf_t0 = std::chrono::steady_clock::now();
     // Tokenize prompt - when tokens is NULL, llama_tokenize returns NEGATIVE count
     const int n_prompt_tokens = -llama_tokenize(g_vocab, sanitized_cstr, sanitized_len, nullptr, 0, true, true);
     LOGI("Token count: %d", n_prompt_tokens);
@@ -387,6 +389,7 @@ Java_com_write4me_llama_1flutter_1android_LlamaFlutterAndroidPlugin_nativeGenera
     }
     tokens.resize(actual_tokens);
     env->ReleaseStringUTFChars(prompt, prompt_str);
+    LOGI("PERF tokenize_ms=%lld tokens=%d chars=%d", (long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - perf_t0).count(), actual_tokens, sanitized_len);
 
     const int n_ctx = llama_n_ctx(g_ctx);
 
@@ -409,6 +412,7 @@ Java_com_write4me_llama_1flutter_1android_LlamaFlutterAndroidPlugin_nativeGenera
     const int max_batch_size = 512;
     int tokens_processed = 0;
     
+    const auto perf_t1 = std::chrono::steady_clock::now();
     llama_batch batch = llama_batch_init(max_batch_size, 0, 1);
 
     LOGI("Context size: %d", llama_n_ctx(g_ctx));
@@ -440,6 +444,7 @@ Java_com_write4me_llama_1flutter_1android_LlamaFlutterAndroidPlugin_nativeGenera
         tokens_processed += batch_size;
     }
 
+    LOGI("PERF prefill_ms=%lld tokens=%d", (long long)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - perf_t1).count(), tokens_processed);
     LOGI("✅ Decode successful! Processed %d total tokens", tokens_processed);
 
     // Update position counter after decoding the whole prompt
